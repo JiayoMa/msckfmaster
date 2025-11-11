@@ -67,8 +67,8 @@ G = calcG(msckfState.imuState);
 C_IG = quatToRotMat(q_IG_true);  % 使用真值旋转
 vHat = measurements_k.v - pokfState.imuState.b_v;
 
-F = zeros(3,3);  # 关键！简化为3×3零矩阵
-G = -C_IG';      # 关键！简化为3×3矩阵
+F = zeros(3,3);  % 关键！简化为3×3零矩阵
+G = -C_IG';      % 关键！简化为3×3矩阵
 ```
 
 ### 修改3: 观测雅可比 - 移除旋转项
@@ -87,11 +87,11 @@ H_x_j((2*c_i - 1):2*c_i, (12+6*(camStateIndex-1) + 4):(12+6*(camStateIndex-1) + 
 **新calcHojPOKF.m (第14-15, 35-37行)**
 ```matlab
 % H矩阵维度仅包含位置（3维IMU + 3维每个相机）
-H_x_j = zeros(2*M, 3 + 3*N);  # 关键！维度减少
+H_x_j = zeros(2*M, 3 + 3*N);  % 关键！维度减少
 
 % 仅位置雅可比，移除旋转项
 H_x_j((2*c_i - 1):2*c_i, 3+3*(camStateIndex-1) + 1:3+3*(camStateIndex-1) + 3) = -J_i*C_CG;
-# 关键！无旋转雅可比项
+% 关键！无旋转雅可比项
 ```
 
 ---
@@ -119,7 +119,7 @@ imuState.b_v     = zeros(3,1);        % 不估计
 imuState.p_I_G   = [px; py; pz];      % 3×1 位置（唯一估计的）
 
 % 误差状态向量（3维）：
-deltaX = [δp(3)]  # 仅位置误差
+deltaX = [δp(3)]  % 仅位置误差
 ```
 
 ---
