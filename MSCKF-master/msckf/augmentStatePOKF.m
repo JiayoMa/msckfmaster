@@ -18,27 +18,21 @@ function pokfState = augmentStatePOKF(pokfState, camera, state_k, q_IG_true)
     q_CG = quatLeftComp(camera.q_CI) * q_IG_true;
     p_C_G = p_I_G + C_IG' * camera.p_C_I;
     
-    % Add new camera state
-    newCamState.q_CG = q_CG;
-    newCamState.p_C_G = p_C_G;
-    newCamState.trackedFeatureIds = [];
-    newCamState.state_k = state_k;
-    pokfState.camStates{end+1} = newCamState;
-    
-    % Augment covariance
+    % Augment covariance FIRST, before adding camera state
     % For position-only: camera state is 3D (position only)
     
-    % Build current covariance matrix
-    N = size(pokfState.camStates, 2) - 1;  % Number of camera states before augmentation
+    % Number of camera states BEFORE augmentation
+    N = size(pokfState.camStates, 2);
     
     % Debug output
-    fprintf('DEBUG augmentStatePOKF: N=%d, camStates=%d\n', N, size(pokfState.camStates, 2));
+    fprintf('DEBUG augmentStatePOKF: N=%d (existing cameras before augment)\n', N);
     fprintf('  imuCovar size: %dx%d\n', size(pokfState.imuCovar, 1), size(pokfState.imuCovar, 2));
     if N > 0
         fprintf('  imuCamCovar size: %dx%d\n', size(pokfState.imuCamCovar, 1), size(pokfState.imuCamCovar, 2));
         fprintf('  camCovar size: %dx%d\n', size(pokfState.camCovar, 1), size(pokfState.camCovar, 2));
     end
     
+    % Build current covariance matrix
     if N == 0
         % First camera state augmentation
         P = pokfState.imuCovar;
@@ -68,4 +62,11 @@ function pokfState = augmentStatePOKF(pokfState, camera, state_k, q_IG_true)
     pokfState.imuCovar = P_aug(1:3, 1:3);
     pokfState.camCovar = P_aug(4:end, 4:end);
     pokfState.imuCamCovar = P_aug(1:3, 4:end);
+    
+    % NOW add new camera state (after covariance augmentation)
+    newCamState.q_CG = q_CG;
+    newCamState.p_C_G = p_C_G;
+    newCamState.trackedFeatureIds = [];
+    newCamState.state_k = state_k;
+    pokfState.camStates{end+1} = newCamState;
 end
