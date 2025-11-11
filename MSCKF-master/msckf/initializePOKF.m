@@ -27,7 +27,22 @@ function [pokfState, featureTracks, trackedFeatureIds] = initializePOKF(firstImu
     pokfState.camCovar = [];
     pokfState.imuCamCovar = [];
     
+    % Augment state with first camera pose (following MSCKF pattern)
+    pokfState = augmentStatePOKF(pokfState, camera, state_k, firstImuState.q_IG);
+    
     % Initialize feature tracks
     featureTracks = {};
     trackedFeatureIds = [];
+    
+    % Add initial observations to feature tracks
+    for featureId = 1:size(measurements.y, 2)
+        meas_k = measurements.y(:, featureId);
+        if ~isnan(meas_k(1,1))
+            track.featureId = featureId;
+            track.observations = meas_k;
+            featureTracks{end+1} = track;
+            trackedFeatureIds(end+1) = featureId;
+            pokfState.camStates{end}.trackedFeatureIds(end+1) = featureId;
+        end
+    end
 end

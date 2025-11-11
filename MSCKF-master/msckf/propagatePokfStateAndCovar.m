@@ -49,6 +49,10 @@ function pokfState_prop = propagatePokfStateAndCovar(pokfState, measurements_k, 
     pokfState_prop.camCovar = pokfState.camCovar;
     
     % IMU-Camera Covariance
-    pokfState_prop.imuCamCovar = Phi * pokfState.imuCamCovar;
+    if isempty(pokfState.imuCamCovar)
+        pokfState_prop.imuCamCovar = [];
+    else
+        pokfState_prop.imuCamCovar = Phi * pokfState.imuCamCovar;
+    end
     pokfState_prop.camStates = pokfState.camStates;
 end
