@@ -31,6 +31,14 @@ function pokfState = augmentStatePOKF(pokfState, camera, state_k, q_IG_true)
     % Build current covariance matrix
     N = size(pokfState.camStates, 2) - 1;  % Number of camera states before augmentation
     
+    % Debug output
+    fprintf('DEBUG augmentStatePOKF: N=%d, camStates=%d\n', N, size(pokfState.camStates, 2));
+    fprintf('  imuCovar size: %dx%d\n', size(pokfState.imuCovar, 1), size(pokfState.imuCovar, 2));
+    if N > 0
+        fprintf('  imuCamCovar size: %dx%d\n', size(pokfState.imuCamCovar, 1), size(pokfState.imuCamCovar, 2));
+        fprintf('  camCovar size: %dx%d\n', size(pokfState.camCovar, 1), size(pokfState.camCovar, 2));
+    end
+    
     if N == 0
         % First camera state augmentation
         P = pokfState.imuCovar;
@@ -39,6 +47,10 @@ function pokfState = augmentStatePOKF(pokfState, camera, state_k, q_IG_true)
         P = [pokfState.imuCovar, pokfState.imuCamCovar;
              pokfState.imuCamCovar', pokfState.camCovar];
     end
+    
+    fprintf('  P size: %dx%d\n', size(P, 1), size(P, 2));
+    fprintf('  J will be: 3x%d\n', 3 + 3*N);
+    fprintf('  eye will be: %dx%d\n', 3 + 3*N, 3 + 3*N);
     
     % Jacobian: new camera position = IMU position (in global frame)
     % J maps IMU state + existing camera states to new camera state
