@@ -27,8 +27,6 @@ function pokfState = augmentStatePOKF(pokfState, camera, state_k, q_IG_true)
     
     % Augment covariance
     % For position-only: camera state is 3D (position only)
-    % J maps IMU position error to camera position error
-    J = eye(3);  % Camera position error = IMU position error (in global frame)
     
     % Build current covariance matrix
     N = size(pokfState.camStates, 2) - 1;  % Number of camera states before augmentation
@@ -42,7 +40,13 @@ function pokfState = augmentStatePOKF(pokfState, camera, state_k, q_IG_true)
              pokfState.imuCamCovar', pokfState.camCovar];
     end
     
-    % Augmentation Jacobian
+    % Jacobian: new camera position = IMU position (in global frame)
+    % J maps IMU state + existing camera states to new camera state
+    % Size: 3 × (3 + 3*N) where N is number of existing cameras
+    J = zeros(3, 3 + 3*N);
+    J(1:3, 1:3) = eye(3);  % New camera position depends on IMU position
+    
+    % Augmentation matrix: [existing states; new camera state]
     tempMat = [eye(3 + 3*N); J];
     
     % Augment covariance
